@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mohanees Singh Manral — Edge Intelligence Researcher</title>
+<meta name="description" content="Electrical Engineer · Edge Intelligence Researcher. TinyML fault detection on $4 microcontrollers for distributed rooftop solar. Open-source, MIT-licensed, real hardware." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+:root {
+  --bg: #000000;
+  --bg-soft: #0a0a0a;
+  --surface: #111113;
+  --surface-2: #1c1c1f;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #f5f5f7;
+  --text-dim: #a1a1a6;
+  --text-mute: #6e6e73;
+  --accent: #30d158;
+  --accent-2: #0a84ff;
+  --accent-3: #bf5af2;
+  --gradient-1: linear-gradient(135deg, #30d158 0%, #0a84ff 50%, #bf5af2 100%);
+  --gradient-2: linear-gradient(135deg, #ff9f0a 0%, #ff375f 100%);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  cursor: default;
+}
+::selection { background: var(--accent); color: #000; }
+
+a { color: inherit; text-decoration: none; }
+
+/* Custom cursor dot — Apple-like */
+.cursor-dot {
+  position: fixed;
+  width: 8px; height: 8px;
+  background: var(--text);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s var(--ease), width 0.2s var(--ease), height 0.2s var(--ease), background 0.2s var(--ease);
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.25s var(--ease-out), width 0.3s var(--ease), height 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+a:hover ~ .cursor-dot, button:hover ~ .cursor-dot { transform: translate(-50%, -50%) scale(0.5); }
+a:hover ~ .cursor-ring, button:hover ~ .cursor-ring { width: 60px; height: 60px; border-color: var(--accent); }
+
+@media (max-width: 800px) { .cursor-dot, .cursor-ring { display: none; } }
+
+/* NAV */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.3s var(--ease);
+}
+.nav-logo {
+  font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo .dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.nav-links { display: flex; gap: 30px; }
+.nav-links a {
+  font-size: 13px; color: var(--text-dim); font-weight: 400;
+  transition: color 0.2s var(--ease);
+}
+.nav-links a:hover { color: var(--text); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 120px 24px 80px;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(48, 209, 88, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(10, 132, 255, 0.16) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(191, 90, 242, 0.14) 0%, transparent 50%);
+  filter: blur(60px);
+  z-index: 0;
+  opacity: 0.7;
+  animation: bg-pan 18s ease-in-out infinite;
+}
+@keyframes bg-pan {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(2%,-2%) scale(1.05); }
+  66%     { transform: translate(-2%,2%) scale(0.97); }
+}
+
+#particle-canvas {
+  position: absolute; inset: 0;
+  z-index: 1;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative; z-index: 2;
+  text-align: center;
+  max-width: 920px;
+}
+
+.hero-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 980px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: rise 0.9s var(--ease-out) 0.1s forwards;
+}
+.hero-kicker .live {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.hero h1 {
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  margin-bottom: 28px;
+  background: linear-gradient(180deg, #ffffff 0%, #b8b8c0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: rise 1.1s var(--ease-out) 0.25s forwards;
+}
+.hero h1 .gradient {
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+.hero h1 .em { font-style: normal; font-weight: 300; }
+
+.hero-tagline {
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--text-dim);
+  max-width: 720px;
+  margin: 0 auto 40px;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: rise 1s var(--ease-out) 0.5s forwards;
+}
+.hero-tagline strong { color: var(--text); font-weight: 500; }
+
+.hero-ctas {
+  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: rise 0.9s var(--ease-out) 0.75s forwards;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 15px; font-weight: 500;
+  border-radius: 980px;
+  transition: all 0.25s var(--ease);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary {
+  background: var(--text);
+  color: #000;
+}
+.btn-primary:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255,255,255,0.18);
+}
+.btn-ghost {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  border-color: var(--border-strong);
+  backdrop-filter: blur(20px);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+.btn svg { width: 14px; height: 14px; }
+
+.scroll-cue {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  z-index: 2;
+  opacity: 0;
+  animation: rise 1s var(--ease-out) 1.2s forwards;
+}
+.scroll-cue::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(to bottom, var(--text-mute), transparent);
+  margin: 12px auto 0;
+  animation: scroll-line 2s ease-in-out infinite;
+}
+@keyframes scroll-line {
+  0%,100% { opacity: 0.3; transform: scaleY(0.6); }
+  50%     { opacity: 1;   transform: scaleY(1); }
+}
+
+@keyframes rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* SECTIONS - common */
+.section {
+  padding: 140px 24px;
+  position: relative;
+}
+.container { max-width: 1180px; margin: 0 auto; }
+.container-narrow { max-width: 880px; margin: 0 auto; }
+
+.section-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-kicker::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--text-mute);
+}
+
+.section-title {
+  font-size: clamp(40px, 5.5vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  margin-bottom: 28px;
+  background: linear-gradient(180deg, #ffffff 0%, #c0c0c8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.section-lead {
+  font-size: clamp(18px, 1.8vw, 22px);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--text-dim);
+  max-width: 720px;
+  letter-spacing: -0.01em;
+  margin-bottom: 64px;
+}
+
+/* REVEAL ANIMATION */
+.reveal {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 1.1s var(--ease-out), transform 1.1s var(--ease-out);
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-1 { transition-delay: 0.1s; }
+.reveal-2 { transition-delay: 0.2s; }
+.reveal-3 { transition-delay: 0.3s; }
+
+/* STATS BAND */
+.stats-band {
+  padding: 80px 24px;
+  background: var(--bg-soft);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.stat {
+  background: var(--bg);
+  padding: 36px 28px;
+  text-align: left;
+  transition: background 0.3s var(--ease);
+}
+.stat:hover { background: var(--surface); }
+.stat-n {
+  font-size: clamp(40px, 4vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 8px;
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stat-l {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+
+@media (max-width: 880px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* GLASS CARDS */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  transition: all 0.4s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,0.04) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
+}
+.glass:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+}
+.glass:hover::before { opacity: 1; }
+
+/* FEATURED PROJECT (Edge Sentinel) */
+.featured-card {
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg-soft) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: 24px;
+  padding: 56px;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 48px;
+}
+.featured-card::before {
+  content: '';
+  position: absolute;
+  top: -200px; right: -200px;
+  width: 500px; height: 500px;
+  background: var(--gradient-1);
+  filter: blur(120px);
+  opacity: 0.18;
+  pointer-events: none;
+}
+.featured-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--gradient-1);
+  opacity: 0.7;
+}
+
+.featured-left { position: relative; z-index: 1; }
+.featured-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(48, 209, 88, 0.12);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  border-radius: 980px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.featured-status .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.featured-title {
+  font-size: clamp(36px, 4vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.featured-tagline {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  max-width: 540px;
+}
+.featured-currently {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--accent);
+  background: rgba(48, 209, 88, 0.06);
+  border: 1px solid rgba(48, 209, 88, 0.2);
+  padding: 10px 16px;
+  border-radius: 10px;
+  margin-bottom: 28px;
+  line-height: 1.55;
+}
+
+.featured-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 32px;
+}
+.chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  padding: 5px 11px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+}
+
+.featured-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.featured-right {
+  display: grid;
+  gap: 14px;
+  align-content: center;
+  position: relative;
+  z-index: 1;
+}
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all 0.25s var(--ease);
+}
+.spec-row:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--border-strong);
+  transform: translateX(4px);
+}
+.spec-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-mute);
+  text-transform: uppercase;
+}
+.spec-v {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+@media (max-width: 880px) {
+  .featured-card { grid-template-columns: 1fr; padding: 32px; gap: 32px; }
+}
+
+/* METRICS BAR */
+.metrics-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  margin-top: 24px;
+}
+.metrics-banner {
+  font-size: 12px;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
+.metrics-banner strong { color: var(--accent); font-weight: 600; }
+
+.met {
+  display: flex; flex-direction: column;
+  gap: 18px;
+}
+.met-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.met-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.met-n {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.met-v {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.met-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.met-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: var(--gradient-1);
+  transition: width 1.6s var(--ease-out);
+  position: relative;
+}
+.met-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer { 0%,100%{transform:translateX(-100%)} 50%{transform:translateX(100%)} }
+.met-foot {
+  margin-top: 16px;
+  font-size: 11px;
+  color: var(--text-mute);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+/* METHODOLOGY GRID */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.method-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  transition: all 0.4s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.method-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+}
+.method-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gradient-1);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s var(--ease-out);
+}
+.method-card:hover::before { transform: scaleX(1); }
+.method-q {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.method-a {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+@media (max-width: 880px) {
+  .method-grid { grid-template-columns: 1fr; }
+}
+
+/* EXPERIENCE */
+.exp-list { position: relative; }
+.exp-item {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  padding: 36px 0;
+  border-bottom: 1px solid var(--border);
+}
+.exp-item:last-child { border-bottom: none; }
+.exp-left { padding-top: 6px; }
+.exp-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 6px;
+}
+.exp-org {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.exp-role {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.exp-desc {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  max-width: 680px;
+}
+.exp-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.exp-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+}
+
+@media (max-width: 880px) {
+  .exp-item { grid-template-columns: 1fr; gap: 12px; padding: 24px 0; }
+}
+
+/* PROJECTS GRID */
+.proj-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 48px;
+}
+.proj-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.4s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.proj-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 56px rgba(0,0,0,0.4);
+}
+.proj-card-year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.proj-card-status {
+  font-size: 9.5px;
+  padding: 3px 8px;
+  border-radius: 980px;
+  letter-spacing: 0.08em;
+}
+.proj-card-status.shipped { background: rgba(48,209,88,0.12); color: var(--accent); }
+.proj-card-status.dev { background: rgba(10,132,255,0.12); color: var(--accent-2); }
+.proj-card-status.roadmap { background: rgba(191,90,242,0.12); color: var(--accent-3); }
+
+.proj-card-title {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-top: 4px;
+}
+.proj-card-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  flex: 1;
+}
+.proj-card-tags {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 8px;
+}
+.proj-card-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-mute);
+}
+.proj-card-link {
+  margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500;
+  color: var(--accent);
+  transition: gap 0.2s var(--ease);
+}
+.proj-card-link:hover { gap: 10px; }
+
+@media (max-width: 880px) {
+  .proj-grid { grid-template-columns: 1fr; }
+}
+
+/* SKILLS GRID */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 48px;
+}
+.skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s var(--ease);
+}
+.skill-card:hover { border-color: var(--border-strong); }
+.skill-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.skill-list {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+@media (max-width: 880px) {
+  .skills-grid { grid-template-columns: 1fr; }
+}
+
+/* INSTITUTIONS */
+.inst-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 48px;
+}
+.inst-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s var(--ease);
+}
+.inst-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.inst-country {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.inst-schol {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+.inst-uni {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.inst-dept {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.inst-fit {
+  font-size: 12px;
+  color: var(--text-mute);
+  line-height: 1.55;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.inst-fit strong { color: var(--text-dim); }
+
+@media (max-width: 880px) {
+  .inst-grid { grid-template-columns: 1fr; }
+}
+
+/* CTA */
+.cta-band {
+  padding: 120px 24px;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(48,209,88,0.12) 0%, transparent 70%);
+  text-align: center;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.cta-title {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 24px;
+}
+.cta-lead {
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--text-dim);
+  max-width: 580px;
+  margin: 0 auto 36px;
+  line-height: 1.5;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.contact-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: all 0.3s var(--ease);
+  color: var(--text);
+}
+.contact-link:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  background: var(--surface-2);
+}
+.contact-icon {
+  width: 20px; height: 20px;
+}
+.contact-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+@media (max-width: 700px) {
+  .contact-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* FOOTER */
+footer {
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-mute);
+  letter-spacing: 0.04em;
+}
+footer a { color: var(--text-dim); transition: color 0.2s var(--ease); }
+footer a:hover { color: var(--text); }
+
+/* SECTION DIVIDERS */
+.section + .section { padding-top: 0; }
+
+/* Disable fancy stuff on small / reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#top" class="nav-logo">
+    <span class="dot"></span>
+    Mohanees
+  </a>
+  <div class="nav-links">
+    <a href="#project">Project</a>
+    <a href="#methodology">Methodology</a>
+    <a href="#experience">Experience</a>
+    <a href="#work">Work</a>
+    <a href="#skills">Stack</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <canvas id="particle-canvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-kicker">
+      <span class="live"></span>
+      Real-hardware validation in progress · IEEE Access Q4 2026
+    </div>
+    <h1>
+      Tiny ML on a<br>
+      <span class="gradient">$4 chip.</span>
+    </h1>
+    <p class="hero-tagline">
+      I'm an Electrical Engineer building <strong>Edge Sentinel</strong> — solar fault detection that runs entirely on a microcontroller, with no cloud, no latency, and no connectivity requirement.
+    </p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="#project">
+        Explore the project
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/MohaneesH01/edge-sentinel-research-edition" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+  <div class="scroll-cue">Scroll</div>
+</section>
+
+<!-- STATS BAND -->
+<section class="stats-band">
+  <div class="stats-grid reveal">
+    <div class="stat"><div class="stat-n">5.1MW</div><div class="stat-l">Solar Monitored</div></div>
+    <div class="stat"><div class="stat-n">9</div><div class="stat-l">BEL Plants</div></div>
+    <div class="stat"><div class="stat-n">7</div><div class="stat-l">System Modules</div></div>
+    <div class="stat"><div class="stat-n">5</div><div class="stat-l">Fault Classes</div></div>
+    <div class="stat"><div class="stat-n">0</div><div class="stat-l">Cloud Calls</div></div>
+  </div>
+</section>
+
+<!-- FEATURED PROJECT -->
+<section class="section" id="project">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-kicker">Flagship Project</div>
+    </div>
+    <div class="reveal reveal-1">
+      <h2 class="section-title">Edge Sentinel<br>Research Edition.</h2>
+    </div>
+    <div class="reveal reveal-2">
+      <p class="section-lead">
+        An end-to-end TinyML fault-detection prototype for distributed rooftop solar. ESP32 sensors → MQTT telemetry → Python backend → classical ML comparison → quantized on-device inference → audit-grade explanations. MIT-licensed, reproducible in one command.
+      </p>
+    </div>
+
+    <div class="featured-card reveal reveal-3">
+      <div class="featured-left">
+        <span class="featured-status">
+          <span class="dot"></span>
+          Software Complete · Real-data Validation In Progress
+        </span>
+        <h3 class="featured-title">A microcontroller that detects solar faults.</h3>
+        <p class="featured-tagline">
+          Edge Sentinel runs a quantized TFLite-Micro (int8) on-device classifier on a $4 ESP32. It distinguishes six fault modes — open circuit, partial shading, temperature anomaly, current deviation, sensor failure, and normal — under real-world conditions of irradiance variability, temperature drift, and sensor aging.
+        </p>
+        <div class="featured-currently">
+          <strong>Currently:</strong> real-hardware validation in progress · synthetic baseline complete (Random Forest 98%, Decision Tree 98% on 5,400 records) · IEEE Access submission target Q4 2026.
+        </div>
+        <div class="featured-chips">
+          <span class="chip">ESP32-S3</span><span class="chip">C/C++</span><span class="chip">Python</span><span class="chip">MQTT</span><span class="chip">scikit-learn</span><span class="chip">TinyML</span><span class="chip">MATLAB</span><span class="chip">Streamlit</span><span class="chip">MIT</span>
+        </div>
+        <div class="featured-actions">
+          <a class="btn btn-primary" href="https://github.com/MohaneesH01/edge-sentinel-research-edition" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+            Repository
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/MohaneesH01/edge-sentinel-research-edition/blob/main/docs/research_question.md" target="_blank" rel="noopener">
+            Research Question
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="featured-right">
+        <div class="spec-row"><span class="spec-k">Target</span><span class="spec-v">IEEE Access Q4 2026</span></div>
+        <div class="spec-row"><span class="spec-k">Hardware</span><span class="spec-v">ESP32 · 520KB RAM</span></div>
+        <div class="spec-row"><span class="spec-k">Dataset</span><span class="spec-v">5,400 records · 6 classes</span></div>
+        <div class="spec-row"><span class="spec-k">License</span><span class="spec-v">MIT Open Source</span></div>
+        <div class="spec-row"><span class="spec-k">Reproducible</span><span class="spec-v">1 command (`run_demo_pipeline.py`)</span></div>
+        <div class="spec-row"><span class="spec-k">Tests</span><span class="spec-v">18/18 pytest green</span></div>
+      </div>
+    </div>
+
+    <div class="metrics-card reveal">
+      <div class="metrics-banner">
+        <strong>synthetic-data baseline</strong> · 5,400 records · 75/25 split · real-data validation in progress
+      </div>
+      <div class="met">
+        <div class="met-row">
+          <div>
+            <div class="met-info"><span class="met-n">Random Forest</span><span class="met-v">98%</span></div>
+            <div class="met-bar"><div class="met-fill" data-w="98"></div></div>
+          </div>
+        </div>
+        <div class="met-row">
+          <div>
+            <div class="met-info"><span class="met-n">Decision Tree</span><span class="met-v">98%</span></div>
+            <div class="met-bar"><div class="met-fill" data-w="98"></div></div>
+          </div>
+        </div>
+        <div class="met-row">
+          <div>
+            <div class="met-info"><span class="met-n">Isolation Forest</span><span class="met-v">92%</span></div>
+            <div class="met-bar"><div class="met-fill" data-w="92"></div></div>
+          </div>
+        </div>
+        <div class="met-row">
+          <div>
+            <div class="met-info"><span class="met-n">Rule-Based</span><span class="met-v">91%</span></div>
+            <div class="met-bar"><div class="met-fill" data-w="91"></div></div>
+          </div>
+        </div>
+        <div class="met-row">
+          <div>
+            <div class="met-info"><span class="met-n">Centroid (on-device)</span><span class="met-v">81%</span></div>
+            <div class="met-bar"><div class="met-fill" data-w="81"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="met-foot">On-device inference latency target ≤ 50ms · measured at deployment, not yet validated on ESP32.</div>
+    </div>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section class="section" id="methodology" style="background:var(--bg-soft); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="reveal"><div class="section-kicker">Methodology</div></div>
+    <div class="reveal reveal-1"><h2 class="section-title">Why these<br>choices?</h2></div>
+    <div class="reveal reveal-2"><p class="section-lead">Six engineering decisions that define Edge Sentinel — and the alternatives I considered.</p></div>
+
+    <div class="method-grid">
+      <div class="method-card reveal">
+        <div class="method-q">Why ESP32 over Arduino Uno?</div>
+        <div class="method-a">Uno has 2KB RAM and no WiFi — can't run TinyML or network. ESP32 gives 520KB usable RAM, WiFi+BLE on-chip, and a mature Arduino + ESP-IDF toolchain, for $4 retail. STM32 (F4) is the right production target (v2); chosen for v1 because of WiFi+BLE integration and the hobbyist ML ecosystem.</div>
+      </div>
+      <div class="method-card reveal">
+        <div class="method-q">Why MQTT instead of HTTP?</div>
+        <div class="method-a">HTTP carries 200-800 bytes of header per ~100-byte payload — 80% wasted bandwidth. MQTT is pub/sub, ~10 bytes overhead, native to IoT brokers. Edge Sentinel publishes telemetry at 0.33Hz with QoS 0; QoS 1 reserved for fault alerts.</div>
+      </div>
+      <div class="method-card reveal">
+        <div class="method-q">Why TinyML on-device, not cloud?</div>
+        <div class="method-a">The target deployment is rural rooftop PV where connectivity is intermittent or absent. Cloud inference fails the use case. On-device inference runs in under 50ms with zero network dependency; data stays on the panel.</div>
+      </div>
+      <div class="method-card reveal">
+        <div class="method-q">Why five detection methods compared?</div>
+        <div class="method-a">Honest benchmarking requires same train/test split, same dataset, same metric. The literature shows rule-based often wins on edge — we test that claim. Centroid is the on-device approximation of Random Forest; v1 ships the centroid, v2 ships a quantized RF.</div>
+      </div>
+      <div class="method-card reveal">
+        <div class="method-q">Why temperature-scaled calibration?</div>
+        <div class="method-a">Without calibration, on-device confidence is meaningless — distance metrics don't map to probability. Temperature scaling converts logits to calibrated probabilities with a single learned scalar T. v2 reports ECE on the held-out test set.</div>
+      </div>
+      <div class="method-card reveal">
+        <div class="method-q">Why audit-grade explanations?</div>
+        <div class="method-a">Safety-critical infrastructure requires per-decision traceability. Each prediction is paired with a rule trace, per-feature Z-score attribution, and a calibrated probability — one JSON line per reading, deployable on Serial or MQTT.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="section" id="experience">
+  <div class="container-narrow">
+    <div class="reveal"><div class="section-kicker">Experience</div></div>
+    <div class="reveal reveal-1"><h2 class="section-title">Built by curiosity,<br>not by grades.</h2></div>
+
+    <div class="exp-list">
+      <div class="exp-item reveal">
+        <div class="exp-left">
+          <div class="exp-date">2025 - Present</div>
+          <div class="exp-org">Self-Initiated Research</div>
+        </div>
+        <div class="exp-right">
+          <div class="exp-role">Edge Intelligence Researcher</div>
+          <div class="exp-desc">Independently designing and building Edge Sentinel Research Edition — an end-to-end TinyML system for solar fault detection on ESP32 hardware. Full pipeline: firmware, MQTT telemetry, Python ML training, model compression, edge deployment, MATLAB validation. Target: IEEE Access publication Q4 2026.</div>
+          <div class="exp-tags">
+            <span class="exp-tag">TinyML</span><span class="exp-tag">ESP32</span><span class="exp-tag">Python</span><span class="exp-tag">MQTT</span><span class="exp-tag">IEEE Access</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-item reveal">
+        <div class="exp-left">
+          <div class="exp-date">2024</div>
+          <div class="exp-org">BEL · Ministry of Defence</div>
+        </div>
+        <div class="exp-right">
+          <div class="exp-role">Engineering Intern</div>
+          <div class="exp-desc">Government internship at India's premier defence electronics company. Worked across electrical manufacturing: LT-room monitoring and power-panel inspection, 5.1 MWp solar plants (9 sites), DG sets and backup power systems, earthing and protection, equipment log maintenance across 5 production lines.</div>
+          <div class="exp-tags">
+            <span class="exp-tag">Solar (5.1 MWp, 9 plants)</span><span class="exp-tag">LT room monitoring</span><span class="exp-tag">DG sets &amp; backup</span><span class="exp-tag">Power-panel inspection</span><span class="exp-tag">Earthing &amp; protection</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-item reveal">
+        <div class="exp-left">
+          <div class="exp-date">2020 - 2024</div>
+          <div class="exp-org">University</div>
+        </div>
+        <div class="exp-right">
+          <div class="exp-role">B.Tech, Electrical Engineering</div>
+          <div class="exp-desc">B.Tech in Electrical Engineering — power systems, circuit theory, signal processing, control systems, power electronics. Built embedded and ML skills on the side.</div>
+          <div class="exp-tags">
+            <span class="exp-tag">EE Fundamentals</span><span class="exp-tag">Power Systems</span><span class="exp-tag">Signal Processing</span><span class="exp-tag">Power Electronics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK / PROJECTS -->
+<section class="section" id="work" style="background:var(--bg-soft); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="reveal"><div class="section-kicker">Work</div></div>
+    <div class="reveal reveal-1"><h2 class="section-title">Things I've<br>built.</h2></div>
+    <div class="reveal reveal-2"><p class="section-lead">One flagship. Five supporting repos. All MIT-licensed, all actively maintained.</p></div>
+
+    <div class="proj-grid">
+      <div class="proj-card reveal">
+        <div class="proj-card-year"><span>2025 · Shipped</span><span class="proj-card-status shipped">Complete</span></div>
+        <div class="proj-card-title">Smart Home Automation</div>
+        <div class="proj-card-desc">Multi-sensor ESP32 IoT system with PIR, LDR, DHT22 sensors via I²C/GPIO in Embedded C++. Relay-switching for automated lighting based on occupancy and ambient conditions. MQTT telemetry to Node-RED dashboard.</div>
+        <div class="proj-card-tags"><span class="proj-card-tag">ESP32</span><span class="proj-card-tag">C++</span><span class="proj-card-tag">MQTT</span><span class="proj-card-tag">Node-RED</span></div>
+        <a class="proj-card-link" href="https://github.com/MohaneesH01" target="_blank" rel="noopener">View repository →</a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-card-year"><span>2026 · In development</span><span class="proj-card-status dev">Active</span></div>
+        <div class="proj-card-title">SmartGrid Digital Twin</div>
+        <div class="proj-card-desc">Real-time digital twin of a 5-14 bus distribution substation: DC + Newton-Raphson load-flow solver, WLS state estimator, MQTT telemetry bridge, Streamlit dashboard.</div>
+        <div class="proj-card-tags"><span class="proj-card-tag">Python</span><span class="proj-card-tag">Newton-Raphson</span><span class="proj-card-tag">Streamlit</span></div>
+        <a class="proj-card-link" href="https://github.com/MohaneesH01/smartgrid-digital-twin" target="_blank" rel="noopener">View repository →</a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-card-year"><span>2026 · In development</span><span class="proj-card-status dev">Active</span></div>
+        <div class="proj-card-title">Predictive Maintenance Lab</div>
+        <div class="proj-card-desc">Vibration + current ML pipeline for rotating-equipment fault prediction: CWRU bearing dataset, FFT features, sklearn baselines, TFLite-Micro deployment path on ESP32-S3.</div>
+        <div class="proj-card-tags"><span class="proj-card-tag">CWRU</span><span class="proj-card-tag">FFT features</span><span class="proj-card-tag">TinyML</span></div>
+        <a class="proj-card-link" href="https://github.com/MohaneesH01/predictive-maintenance-lab" target="_blank" rel="noopener">View repository →</a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-card-year"><span>2026 · In development</span><span class="proj-card-status dev">Active</span></div>
+        <div class="proj-card-title">Industrial Edge Vision</div>
+        <div class="proj-card-desc">ESP32-S3 on-device computer vision for industrial inspection: person detection (OpenMV canned demo), PPE helmet detection (custom-trained, int8 quantised), panel soiling detection. Zero cloud.</div>
+        <div class="proj-card-tags"><span class="proj-card-tag">ESP32-S3</span><span class="proj-card-tag">OpenMV</span><span class="proj-card-tag">Edge AI</span></div>
+        <a class="proj-card-link" href="https://github.com/MohaneesH01/industrial-edge-vision" target="_blank" rel="noopener">View repository →</a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-card-year"><span>2026 · In development</span><span class="proj-card-status dev">Active</span></div>
+        <div class="proj-card-title">Autonomous Energy Management</div>
+        <div class="proj-card-desc">Self-optimising solar + battery + load scheduler: Prophet PV forecasting (NSRDB data), PuLP LP scheduler for 24h charge/discharge setpoints, edge deployment of forecast model.</div>
+        <div class="proj-card-tags"><span class="proj-card-tag">Prophet</span><span class="proj-card-tag">PuLP</span><span class="proj-card-tag">Forecasting</span></div>
+        <a class="proj-card-link" href="https://github.com/MohaneesH01/autonomous-energy-management" target="_blank" rel="noopener">View repository →</a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-card-year"><span>2026 · Roadmap</span><span class="proj-card-status roadmap">Future</span></div>
+        <div class="proj-card-title">Edge Sentinel Roadmap</div>
+        <div class="proj-card-desc">After v1 hardware validation: PCB version (KiCad, Q1 2027), STM32 port for industrial temperature range (Q2 2027), pilot deployment at 5-10 panels (Q3-Q4 2027). One project becomes six resume points.</div>
+        <div class="proj-card-tags"><span class="proj-card-tag">PCB</span><span class="proj-card-tag">STM32</span><span class="proj-card-tag">Pilot</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="section" id="skills">
+  <div class="container">
+    <div class="reveal"><div class="section-kicker">Stack</div></div>
+    <div class="reveal reveal-1"><h2 class="section-title">Tools I reach<br>for first.</h2></div>
+    <div class="reveal reveal-2"><p class="section-lead">Categorical skills. No self-assigned percentages — a list of what I have actually shipped with.</p></div>
+
+    <div class="skills-grid">
+      <div class="skill-card reveal">
+        <div class="skill-kicker">Embedded Systems</div>
+        <div class="skill-list">ESP32 · Arduino C++ · ESP-IDF · I²C / SPI / UART · GPIO / ADC / PWM · sensor integration · FreeRTOS (in progress)</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-kicker">IoT &amp; Telemetry</div>
+        <div class="skill-list">MQTT (PubSubClient / paho-mqtt) · WiFi · SQLite · CSV pipelines · Streamlit · Node-RED</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-kicker">Machine Learning</div>
+        <div class="skill-list">scikit-learn · Decision Tree / Random Forest / Isolation Forest · pandas · NumPy · matplotlib · Temperature-scaled calibration</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-kicker">TinyML &amp; Edge AI</div>
+        <div class="skill-list">Model export (centroid JSON → C header) · TFLite-Micro (in progress) · On-device inference · Audit-grade explanations</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-kicker">Power &amp; Energy Systems</div>
+        <div class="skill-list">Solar PV monitoring · 33/11 kV transformers · DG sets &amp; backup · Earthing &amp; protection · 5.1 MWp hands-on (BEL)</div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-kicker">Tools &amp; Workflow</div>
+        <div class="skill-list">Git / GitHub · GitHub CLI · GitHub Actions CI · Arduino IDE · MATLAB / Simulink (basic) · pytest · Linux / bash</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARGET INSTITUTIONS -->
+<section class="section" id="targets" style="background:var(--bg-soft); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="reveal"><div class="section-kicker">Where this research fits</div></div>
+    <div class="reveal reveal-1"><h2 class="section-title">Six labs.<br>One question.</h2></div>
+    <div class="reveal reveal-2"><p class="sec-lead" style="font-size:18px; color:var(--text-dim); max-width:720px; margin-bottom:48px;">Active research groups whose work directly overlaps Edge Sentinel's contributions.</p></div>
+
+    <div class="inst-grid">
+      <div class="inst-card reveal">
+        <div class="inst-country">Germany</div>
+        <div class="inst-schol">DAAD Research Scholarship</div>
+        <div class="inst-uni">TU Munich</div>
+        <div class="inst-dept">Chair of Energy Conversion &amp; Storage Systems</div>
+        <div class="inst-fit"><strong>Fit:</strong> Distributed PV monitoring, embedded sensing, Energiewende research</div>
+      </div>
+      <div class="inst-card reveal">
+        <div class="inst-country">Germany</div>
+        <div class="inst-schol">DAAD Research Scholarship</div>
+        <div class="inst-uni">TU Berlin</div>
+        <div class="inst-dept">Smart Energy Systems Laboratory</div>
+        <div class="inst-fit"><strong>Fit:</strong> IoT for energy infrastructure, edge computing in power networks</div>
+      </div>
+      <div class="inst-card reveal">
+        <div class="inst-country">Germany</div>
+        <div class="inst-schol">DAAD / Self-Funded</div>
+        <div class="inst-uni">KIT Karlsruhe</div>
+        <div class="inst-dept">Institute for Embedded Systems (ITIV)</div>
+        <div class="inst-fit"><strong>Fit:</strong> Embedded ML on microcontrollers, model compression, energy applications</div>
+      </div>
+      <div class="inst-card reveal">
+        <div class="inst-country">Japan</div>
+        <div class="inst-schol">MEXT — University Recommendation</div>
+        <div class="inst-uni">Tokyo Tech</div>
+        <div class="inst-dept">Embedded Intelligence &amp; IoT Lab</div>
+        <div class="inst-fit"><strong>Fit:</strong> TinyML deployment, sensor fusion, microcontroller inference</div>
+      </div>
+      <div class="inst-card reveal">
+        <div class="inst-country">Japan</div>
+        <div class="inst-schol">MEXT — University Recommendation</div>
+        <div class="inst-uni">Tohoku University</div>
+        <div class="inst-dept">Energy Systems Research Group</div>
+        <div class="inst-fit"><strong>Fit:</strong> Renewable energy monitoring, distributed fault detection</div>
+      </div>
+      <div class="inst-card reveal">
+        <div class="inst-country">Switzerland</div>
+        <div class="inst-schol">EPFL Excellence Fellowship</div>
+        <div class="inst-uni">EPFL Lausanne</div>
+        <div class="inst-dept">Embedded Systems Laboratory (ESL)</div>
+        <div class="inst-fit"><strong>Fit:</strong> Ultra-low-power ML inference, hardware-software co-design</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / CONTACT -->
+<section class="cta-band" id="contact">
+  <div class="reveal"><div class="section-kicker" style="justify-content:center;">Get in touch</div></div>
+  <div class="reveal reveal-1"><h2 class="cta-title">Let's build<br>something real.</h2></div>
+  <div class="reveal reveal-2"><p class="cta-lead">Open to MS positions starting 2027 (DAAD, MEXT, EPFL) and embedded-systems roles in Japan, Germany, and the EU. If you work on edge computing, embedded ML, or renewable energy — let's talk.</p></div>
+
+  <div class="contact-grid reveal reveal-3">
+    <a class="contact-link" href="https://github.com/MohaneesH01/edge-sentinel-research-edition" target="_blank" rel="noopener">
+      <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.192.694.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/></svg>
+      <span class="contact-label">GitHub</span>
+    </a>
+    <a class="contact-link" href="mailto:singhmanral22@gmail.com">
+      <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span class="contact-label">Email</span>
+    </a>
+    <a class="contact-link" href="https://linkedin.com/in/itsmohaneesh01" target="_blank" rel="noopener">
+      <svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      <span class="contact-label">LinkedIn</span>
+    </a>
+    <a class="contact-link" href="https://github.com/MohaneesH01/edge-sentinel-research-edition/blob/main/docs/research_question.md" target="_blank" rel="noopener">
+      <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="contact-label">Research</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  © 2026 Mohanees Singh Manral · Edge Sentinel Research Edition · MIT License · Built in India · Aimed at the world
+</footer>
+
+<script>
+// ── Custom cursor ──────────────────────────────────────────────────────
+const dot = document.querySelector('.cursor-dot');
+const ring = document.querySelector('.cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function loop() {
+  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+  rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(loop);
+}
+loop();
+
+document.querySelectorAll('a, button, .proj-card, .method-card, .glass, .skill-card, .inst-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    ring.style.width = '60px'; ring.style.height = '60px';
+    ring.style.borderColor = 'var(--accent)';
+  });
+  el.addEventListener('mouseleave', () => {
+    ring.style.width = '36px'; ring.style.height = '36px';
+    ring.style.borderColor = 'rgba(255,255,255,0.5)';
+  });
+});
+
+// ── Particle sphere (hero) ─────────────────────────────────────────────
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, T = 0, pts = [];
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = canvas.offsetWidth * dpr;
+  H = canvas.height = canvas.offsetHeight * dpr;
+  canvas.style.width = canvas.offsetWidth + 'px';
+  canvas.style.height = canvas.offsetHeight + 'px';
+  ctx.scale(dpr, dpr);
+}
+
+function init() {
+  pts = [];
+  const w = canvas.offsetWidth, h = canvas.offsetHeight;
+  const N = Math.min(180, Math.floor(w * h / 9000));
+  for (let i = 0; i < N; i++) {
+    const phi = Math.acos(1 - 2 * (i + 0.5) / N);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    pts.push({
+      bx: Math.sin(phi) * Math.cos(theta),
+      by: Math.sin(phi) * Math.sin(theta),
+      bz: Math.cos(phi),
+      s: Math.random() * 1.4 + 0.4,
+      o: Math.random() * 0.4 + 0.3,
+    });
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+  const cx = canvas.offsetWidth / 2;
+  const cy = canvas.offsetHeight / 2;
+  const R = Math.min(canvas.offsetWidth, canvas.offsetHeight) * 0.28;
+  const rx = T * 0.0025, ry = T * 0.0015;
+  const cX = Math.cos(rx), sX = Math.sin(rx), cY = Math.cos(ry), sY = Math.sin(ry);
+
+  for (const p of pts) {
+    const x1 = p.bx * cY - p.bz * sY;
+    const z1 = p.bx * sY + p.bz * cY;
+    const y2 = p.by * cX - z1 * sX;
+    const z2 = p.by * sX + z1 * cX;
+    const sc = (z2 + 2) / 3;
+    const px = cx + x1 * R * sc;
+    const py = cy + y2 * R * sc;
+    const a = p.o * ((z2 + 1) / 2) * 0.7;
+    ctx.beginPath();
+    ctx.arc(px, py, p.s * sc, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(120, 200, 255, ${a})`;
+    ctx.fill();
+  }
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const p1 = pts[i], p2 = pts[j];
+      // Cheap approx: use stored sphere position rather than projected
+      const dx = (p1.bx - p2.bx) * R;
+      const dy = (p1.by - p2.by) * R;
+      const dz = (p1.bz - p2.bz) * R;
+      const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      if (d < 80) {
+        ctx.beginPath();
+        ctx.moveTo(cx + p1.bx * R, cy + p1.by * R);
+        ctx.lineTo(cx + p2.bx * R, cy + p2.by * R);
+        ctx.strokeStyle = `rgba(120, 200, 255, ${0.05 * (1 - d/80)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+  T++;
+  requestAnimationFrame(draw);
+}
+
+resize();
+init();
+draw();
+window.addEventListener('resize', () => { resize(); init(); });
+
+// ── Scroll reveal ───────────────────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -80px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── Metric bars ─────────────────────────────────────────────────────────
+const metricsObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('.met-fill').forEach((f, i) => {
+      setTimeout(() => { f.style.width = f.dataset.w + '%'; }, i * 80);
+    });
+    metricsObs.unobserve(e.target);
+  });
+}, { threshold: 0.4 });
+document.querySelectorAll('.metrics-card').forEach(el => metricsObs.observe(el));
+
+// ── Smooth nav highlight (optional) ─────────────────────────────────────
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) cur = s.id; });
+  navLinks.forEach(a => {
+    const active = a.getAttribute('href') === '#' + cur;
+    a.style.color = active ? 'var(--text)' : '';
+  });
+}, { passive: true });
+
+// ── Hero parallax: subtle mouse-driven offset on title ──────────────────
+const heroInner = document.querySelector('.hero-inner');
+const heroBg = document.querySelector('.hero-bg');
+let hmx = 0, hmy = 0;
+document.addEventListener('mousemove', e => {
+  if (window.innerWidth < 800) return;
+  const x = (e.clientX / window.innerWidth - 0.5) * 2;
+  const y = (e.clientY / window.innerHeight - 0.5) * 2;
+  hmx += (x * 12 - hmx) * 0.05;
+  hmy += (y * 8 - hmy) * 0.05;
+  if (heroInner) heroInner.style.transform = `translate(${hmx}px, ${hmy}px)`;
+  if (heroBg) heroBg.style.transform = `translate(${-hmx*0.5}px, ${-hmy*0.5}px)`;
+});
+</script>
+
+</body>
+</html>

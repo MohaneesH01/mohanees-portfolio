@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Mohanees Singh Manral — Edge Intelligence</title>
+<title>Mohaneesh Singh Manral — Edge Intelligence</title>
 <meta name="description" content="Electrical Engineer building TinyML fault detection for distributed solar. Open-source, MIT-licensed, on a $4 microcontroller." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1041,6 +1041,284 @@ footer .sep { margin: 0 12px; color: var(--line); }
 }
 
 /* REDUCED MOTION */
+
+/* INTERACTIVE 3-MODULE DEEP DIVE */
+.modules {
+  margin-top: 80px;
+  padding-top: 56px;
+  border-top: 1px solid rgba(244,241,236,0.10);
+}
+.modules-head { margin-bottom: 36px; }
+.modules-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #d4b87a;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modules-eyebrow::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #d4b87a;
+  animation: pulse 2s ease-in-out infinite;
+}
+.modules-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--paper);
+  line-height: 1.1;
+}
+.modules-title .em { font-style: italic; color: #d4b87a; }
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.module-card {
+  background: rgba(244,241,236,0.04);
+  border: 1px solid rgba(244,241,236,0.12);
+  border-radius: 16px;
+  padding: 28px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.4s var(--ease);
+  font-family: inherit;
+  color: var(--paper);
+}
+.module-card:hover {
+  background: rgba(244,241,236,0.07);
+  border-color: rgba(212,184,122,0.4);
+  transform: translateY(-3px);
+}
+.module-card.open {
+  background: rgba(244,241,236,0.08);
+  border-color: #d4b87a;
+}
+.module-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.module-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(244,241,236,0.5);
+}
+.module-tag {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #d4b87a;
+  padding: 3px 8px;
+  border: 1px solid rgba(212,184,122,0.3);
+  border-radius: 980px;
+}
+.module-name {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+  line-height: 1.15;
+  text-align: left;
+}
+.module-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(244,241,236,0.7);
+  text-align: left;
+}
+.module-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(244,241,236,0.08);
+  border-bottom: 1px solid rgba(244,241,236,0.08);
+  margin-top: auto;
+}
+.module-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mstat-k {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(244,241,236,0.45);
+}
+.mstat-v {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--paper);
+}
+.module-expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #d4b87a;
+  transition: gap 0.25s var(--ease);
+  margin-top: 4px;
+}
+.module-card:hover .module-expand { gap: 12px; }
+.module-expand svg {
+  width: 14px; height: 14px;
+  transition: transform 0.35s var(--ease);
+}
+.module-card.open .module-expand svg { transform: rotate(180deg); }
+
+/* Panel */
+.module-panels {
+  margin-top: 24px;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.6s var(--ease), margin-top 0.4s var(--ease);
+}
+.module-panels.open {
+  max-height: 1200px;
+  margin-top: 24px;
+}
+.module-panel {
+  background: rgba(244,241,236,0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(212,184,122,0.3);
+  border-radius: 16px;
+  padding: 48px;
+  position: relative;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+}
+.module-panel.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.module-panel[hidden] { display: none !important; }
+.panel-close {
+  position: absolute;
+  top: 24px; right: 24px;
+  width: 36px; height: 36px;
+  background: transparent;
+  border: 1px solid rgba(244,241,236,0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s var(--ease);
+  color: var(--paper);
+}
+.panel-close:hover {
+  background: rgba(244,241,236,0.08);
+  border-color: var(--paper);
+  transform: rotate(90deg);
+}
+.panel-close svg { width: 14px; height: 14px; }
+.panel-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+.panel-kicker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #d4b87a;
+  margin-bottom: 16px;
+}
+.panel-title {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--paper);
+  margin-bottom: 20px;
+}
+.panel-title .em { font-style: italic; color: #d4b87a; }
+.panel-lead {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(244,241,236,0.7);
+  margin-bottom: 32px;
+  max-width: 540px;
+}
+.panel-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.panel-detail-grid > div {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(244,241,236,0.08);
+}
+.panel-detail-grid > div:first-child { padding-top: 0; }
+.pd-k {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(244,241,236,0.5);
+}
+.pd-v {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(244,241,236,0.85);
+}
+.panel-visual {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(244,241,236,0.06);
+  border-radius: 12px;
+  padding: 24px;
+}
+.ascii-diagram {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #d4b87a;
+  margin-bottom: 16px;
+}
+.ascii-pre {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: rgba(244,241,236,0.75);
+  white-space: pre;
+  overflow-x: auto;
+  margin: 0;
+}
+
+@media (max-width: 880px) {
+  .modules-grid { grid-template-columns: 1fr; }
+  .panel-grid { grid-template-columns: 1fr; gap: 32px; }
+  .module-panel { padding: 32px; }
+  .panel-detail-grid > div { grid-template-columns: 1fr; gap: 8px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -1055,7 +1333,7 @@ footer .sep { margin: 0 12px; color: var(--line); }
 <!-- NAV -->
 <nav class="nav" id="nav">
   <a href="#top" class="nav-mark">
-    <span class="dot"></span>Mohanees
+    <span class="dot"></span>Mohaneesh&nbsp;Singh&nbsp;Manral
   </a>
   <div class="nav-links">
     <a href="#project">Project</a>
@@ -1200,6 +1478,220 @@ footer .sep { margin: 0 12px; color: var(--line); }
         </div>
       </div>
       <div class="metrics-foot">On-device inference latency target ≤ 50ms · measured at deployment, not yet validated on ESP32.</div>
+    </div>
+
+    <!-- Interactive 3-module deep dive -->
+    <div class="modules reveal" id="deepdive">
+      <div class="modules-head">
+        <span class="modules-eyebrow">Interactive · Click to expand</span>
+        <h3 class="modules-title">Three modules. <em>One system.</em></h3>
+      </div>
+      <div class="modules-grid">
+        <button class="module-card" data-module="mcu" aria-expanded="false">
+          <div class="module-head">
+            <span class="module-num">01</span>
+            <span class="module-tag">Hardware</span>
+          </div>
+          <h4 class="module-name">ESP32 Edge Node</h4>
+          <p class="module-desc">$4 microcontroller, 520KB RAM, 240MHz dual-core. Reads voltage, current, temperature. Publishes JSON over MQTT every 3 seconds.</p>
+          <div class="module-stats">
+            <div><span class="mstat-k">Chip</span><span class="mstat-v">ESP32-S3</span></div>
+            <div><span class="mstat-k">RAM</span><span class="mstat-v">520KB</span></div>
+            <div><span class="mstat-k">Cadence</span><span class="mstat-v">0.33Hz</span></div>
+          </div>
+          <span class="module-expand">
+            <span class="expand-text">Show details</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </button>
+
+        <button class="module-card" data-module="ml" aria-expanded="false">
+          <div class="module-head">
+            <span class="module-num">02</span>
+            <span class="module-tag">Pipeline</span>
+          </div>
+          <h4 class="module-name">ML Pipeline</h4>
+          <p class="module-desc">Five detection methods compared under identical conditions: rule-based, statistical Z-score, centroid, Decision Tree, Random Forest, Isolation Forest.</p>
+          <div class="module-stats">
+            <div><span class="mstat-k">Methods</span><span class="mstat-v">5 compared</span></div>
+            <div><span class="mstat-k">Dataset</span><span class="mstat-v">5,400 records</span></div>
+            <div><span class="mstat-k">Best F1</span><span class="mstat-v">0.98 (RF)</span></div>
+          </div>
+          <span class="module-expand">
+            <span class="expand-text">Show details</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </button>
+
+        <button class="module-card" data-module="tinyml" aria-expanded="false">
+          <div class="module-head">
+            <span class="module-num">03</span>
+            <span class="module-tag">Edge inference</span>
+          </div>
+          <h4 class="module-name">TinyML Deployment</h4>
+          <p class="module-desc">Quantized on-device classifier with temperature-scaled calibration and audit-grade explanations — every prediction paired with a rule trace and feature attribution.</p>
+          <div class="module-stats">
+            <div><span class="mstat-k">Format</span><span class="mstat-v">int8 quantized</span></div>
+            <div><span class="mstat-k">Latency</span><span class="mstat-v">≤50ms</span></div>
+            <div><span class="mstat-k">Audit</span><span class="mstat-v">per-decision</span></div>
+          </div>
+          <span class="module-expand">
+            <span class="expand-text">Show details</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- Expanded detail panels (hidden by default) -->
+      <div class="module-panels">
+        <article class="module-panel" data-panel="mcu" hidden>
+          <button class="panel-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div class="panel-grid">
+            <div>
+              <div class="panel-kicker">Module 01 · Hardware</div>
+              <h4 class="panel-title">The <em>ESP32</em> edge node.</h4>
+              <p class="panel-lead">A $4 chip with enough headroom for a 6-class TinyML inference path, integrated WiFi+BLE, and a mature ESP-IDF + Arduino toolchain. The dual-core architecture lets v2 split sensor reads from inference without a real-time OS.</p>
+              <div class="panel-detail-grid">
+                <div>
+                  <div class="pd-k">Sensors</div>
+                  <div class="pd-v">INA219 (voltage + current) · DHT22 (ambient temperature + humidity)</div>
+                </div>
+                <div>
+                  <div class="pd-k">Transport</div>
+                  <div class="pd-v">WiFi 802.11 b/g/n · MQTT 3.1.1 over TCP · QoS 0 (fire-and-forget)</div>
+                </div>
+                <div>
+                  <div class="pd-k">Memory</div>
+                  <div class="pd-v">520KB usable SRAM · 4MB flash · RTC memory for deep-sleep retention</div>
+                </div>
+                <div>
+                  <div class="pd-k">Power</div>
+                  <div class="pd-v">~80mA active · ~10μA deep sleep · solar-charged Li-ion for off-grid deployments</div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-visual">
+              <div class="ascii-diagram">ESP32-WROOM-32</div>
+              <pre class="ascii-pre">┌─────────────────────┐
+│  ESP32-S3           │
+│  240MHz · 520KB RAM  │
+├─────────────────────┤
+│  GPIO 21 (SDA) ─── INA219
+│  GPIO 22 (SCL) ─── INA219
+│  GPIO 4  (DATA) ── DHT22
+│  3.3V     ─── Sensors
+│  GND      ─── Common
+├─────────────────────┤
+│  WiFi + MQTT over TCP
+│  Publish every 3s
+└─────────────────────┘</pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="module-panel" data-panel="ml" hidden>
+          <button class="panel-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div class="panel-grid">
+            <div>
+              <div class="panel-kicker">Module 02 · Pipeline</div>
+              <h4 class="panel-title">Five methods, <em>honest comparison.</em></h4>
+              <p class="panel-lead">Same train/test split, same dataset, same metric. The literature shows rule-based often wins on edge hardware — we test that claim. The on-device approximation of Random Forest is the centroid classifier (Euclidean distance to per-class mean).</p>
+              <div class="panel-detail-grid">
+                <div>
+                  <div class="pd-k">Rule-based</div>
+                  <div class="pd-v">Deterministic thresholds; 91% accuracy on synthetic; 27 lines of code; mirrors the on-device firmware exactly.</div>
+                </div>
+                <div>
+                  <div class="pd-k">Statistical</div>
+                  <div class="pd-v">Per-class mean + std; Z-score anomaly detector; emits drift candidates separately from the predicted class.</div>
+                </div>
+                <div>
+                  <div class="pd-k">Centroid (on-device)</div>
+                  <div class="pd-v">Argmin Euclidean over class means; the only model that fits in ESP32 RAM without quantization; exports as C header array.</div>
+                </div>
+                <div>
+                  <div class="pd-k">Random Forest / Decision Tree / Isolation Forest</div>
+                  <div class="pd-v">Sklearn baselines; 98% / 98% / 92% on synthetic; v2 ships a quantized RF for on-device.</div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-visual">
+              <div class="ascii-diagram">Pipeline</div>
+              <pre class="ascii-pre">Synthetic dataset (5,400)
+        │
+        ▼
+   ┌─────────────┐
+   │  75/25 split │
+   │   seed=42   │
+   └─────┬───────┘
+         │
+   ┌─────┼────────────────┐
+   ▼     ▼     ▼     ▼    ▼
+  Rule  Stat  Cent.  DT   RF
+   91    80    81   98   98
+   │     │     │     │    │
+   └─────┴─────┴─────┴────┘
+              │
+              ▼
+   confusion matrix + F1
+   per class → reports/figures/</pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="module-panel" data-panel="tinyml" hidden>
+          <button class="panel-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div class="panel-grid">
+            <div>
+              <div class="panel-kicker">Module 03 · Edge inference</div>
+              <h4 class="panel-title">TinyML, with <em>calibration</em> and <em>audit</em>.</h4>
+              <p class="panel-lead">The model is the small part. The interesting work is what makes the inference trustworthy: temperature-scaled calibrated confidence, per-decision audit explanations, and a deployable C header that the ESP32 firmware includes directly.</p>
+              <div class="panel-detail-grid">
+                <div>
+                  <div class="pd-k">Model export</div>
+                  <div class="pd-v">tinyml/export_centroid_header.py converts centroid_model.json to edge_sentinel_centroid_model.h · static const arrays · placed in flash, not RAM</div>
+                </div>
+                <div>
+                  <div class="pd-k">Calibration</div>
+                  <div class="pd-v">Temperature scaling: single learned scalar T · grid search + Newton refinement · NLL minimisation on validation set · v2 reports ECE</div>
+                </div>
+                <div>
+                  <div class="pd-k">Audit explanations</div>
+                  <div class="pd-v">Per prediction: rule trace (which deterministic rules fired) + per-feature Z-score attribution + calibrated probability · one JSON line per reading</div>
+                </div>
+                <div>
+                  <div class="pd-k">Output schema</div>
+                  <div class="pd-v">{prediction, confidence, rules_fired[], feature_attribution{}, drift_candidates[]} · deployable on Serial or MQTT</div>
+                </div>
+              </div>
+            </div>
+            <div class="panel-visual">
+              <div class="ascii-diagram">On-device inference</div>
+              <pre class="ascii-pre">const float centroids[6][4] = {
+  /* normal */     {12.0, 0.85, 31.0, 10.2},
+  /* open_circuit */{12.4, 0.02, 31.0,  0.25},
+  /* partial_shd */{10.4, 0.28, 32.0,  2.91},
+  /* temp_anom  */  {11.7, 0.76, 48.0,  8.89},
+  /* current_dev */{11.8, 1.40, 33.0, 16.52},
+  /* sensor_fail*/ {-99.0,-99.0,-99.0,-99.0},
+};
+
+void classify(float v, float i, float t) {
+  // argmin Euclidean distance to centroids
+  // → on-device inference in <1ms
+  // → calibrated probability via temperature scaling
+  // → JSON output with rule trace + attribution
+}</pre>
+            </div>
+          </div>
+        </article>
+      </div>
     </div>
   </div>
 </section>
@@ -1553,6 +2045,59 @@ window.addEventListener('scroll', () => {
     a.style.color = (a.getAttribute('href') === '#' + cur) ? 'var(--ink)' : '';
   });
 }, { passive: true });
+
+// ── Interactive 3-module deep dive ────────────────────────────────────
+const moduleCards = document.querySelectorAll('.module-card');
+const modulePanels = document.querySelector('.module-panels');
+const modulePanelEls = document.querySelectorAll('.module-panel');
+const panelCloses = document.querySelectorAll('.panel-close');
+let activeModule = null;
+
+function openModule(name) {
+  if (activeModule === name) { closeModule(); return; }
+  // Close any open card
+  moduleCards.forEach(c => c.classList.remove('open'));
+  modulePanelEls.forEach(p => { p.hidden = true; p.classList.remove('show'); });
+  // Open the new one
+  const card = document.querySelector(`[data-module="${name}"]`);
+  const panel = document.querySelector(`[data-panel="${name}"]`);
+  card.classList.add('open');
+  card.setAttribute('aria-expanded', 'true');
+  card.querySelector('.expand-text').textContent = 'Hide details';
+  panel.hidden = false;
+  modulePanels.classList.add('open');
+  requestAnimationFrame(() => panel.classList.add('show'));
+  activeModule = name;
+  // Smooth scroll the panel into view after a beat
+  setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 200);
+}
+
+function closeModule() {
+  if (!activeModule) return;
+  const card = document.querySelector(`[data-module="${activeModule}"]`);
+  const panel = document.querySelector(`[data-panel="${activeModule}"]`);
+  card.classList.remove('open');
+  card.setAttribute('aria-expanded', 'false');
+  card.querySelector('.expand-text').textContent = 'Show details';
+  panel.classList.remove('show');
+  modulePanels.classList.remove('open');
+  setTimeout(() => { panel.hidden = true; }, 400);
+  activeModule = null;
+}
+
+moduleCards.forEach(card => {
+  card.addEventListener('click', () => openModule(card.dataset.module));
+});
+panelCloses.forEach(btn => {
+  btn.addEventListener('click', closeModule);
+});
+// ESC closes any open panel
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && activeModule) closeModule();
+});
+
 </script>
 
 </body>

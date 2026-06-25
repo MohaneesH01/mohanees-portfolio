@@ -1319,6 +1319,60 @@ footer .sep { margin: 0 12px; color: var(--line); }
   .panel-detail-grid > div { grid-template-columns: 1fr; gap: 8px; }
 }
 
+
+/* 3D iframe embed + panel CTA */
+.panel-visual.panel-3d {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #0a0a0a;
+}
+.panel-visual.panel-3d iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.panel-3d-hint {
+  position: absolute;
+  bottom: 12px; left: 12px; right: 12px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(244,241,236,0.5);
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+  padding: 16px 0 4px;
+}
+.panel-cta {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(244,241,236,0.08);
+}
+.panel-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: rgba(212,184,122,0.12);
+  border: 1px solid rgba(212,184,122,0.4);
+  border-radius: 980px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d4b87a;
+  text-decoration: none;
+  transition: all 0.3s var(--ease);
+}
+.panel-cta-btn:hover {
+  background: rgba(212,184,122,0.2);
+  border-color: #d4b87a;
+  transform: translateY(-2px);
+}
+.panel-cta-btn svg { width: 14px; height: 14px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -1571,22 +1625,16 @@ footer .sep { margin: 0 12px; color: var(--line); }
                   <div class="pd-v">~80mA active · ~10μA deep sleep · solar-charged Li-ion for off-grid deployments</div>
                 </div>
               </div>
+              <div class="panel-cta">
+                <a href="esp32_viewer.html" target="_blank" rel="noopener" class="panel-cta-btn">
+                  Open full 3D viewer in new tab
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17L17 7M9 7h8v8"/></svg>
+                </a>
+              </div>
             </div>
-            <div class="panel-visual">
-              <div class="ascii-diagram">ESP32-WROOM-32</div>
-              <pre class="ascii-pre">┌─────────────────────┐
-│  ESP32-S3           │
-│  240MHz · 520KB RAM  │
-├─────────────────────┤
-│  GPIO 21 (SDA) ─── INA219
-│  GPIO 22 (SCL) ─── INA219
-│  GPIO 4  (DATA) ── DHT22
-│  3.3V     ─── Sensors
-│  GND      ─── Common
-├─────────────────────┤
-│  WiFi + MQTT over TCP
-│  Publish every 3s
-└─────────────────────┘</pre>
+            <div class="panel-visual panel-3d">
+              <iframe src="esp32_viewer.html" title="ESP32-S3 Interactive 3D" loading="lazy" allowfullscreen></iframe>
+              <div class="panel-3d-hint">Drag · Scroll · Hover · Space to disassemble</div>
             </div>
           </div>
         </article>

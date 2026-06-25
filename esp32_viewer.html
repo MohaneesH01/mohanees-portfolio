@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ESP32 Interactive 3D — Edge Sentinel</title>
+<style>
+  body { margin: 0; background: #0a0a0a; color: #f4f1ec; font-family: -apple-system, BlinkMacSystemFont, sans-serif; overflow: hidden; }
+  #app { position: fixed; inset: 0; }
+  .ui {
+    position: fixed; top: 20px; left: 20px;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(20px);
+    border: 1px solid rgba(244,241,236,0.12);
+    border-radius: 14px; padding: 16px 20px;
+    font-size: 13px; max-width: 320px; line-height: 1.55;
+    z-index: 10;
+  }
+  .ui h1 { font-size: 16px; margin: 0 0 8px; font-weight: 500; }
+  .ui p { margin: 0 0 6px; color: rgba(244,241,236,0.7); font-size: 12.5px; }
+  .ui kbd { background: rgba(244,241,236,0.1); border: 1px solid rgba(244,241,236,0.2); border-radius: 4px; padding: 1px 6px; font-family: monospace; font-size: 11px; }
+  .legend {
+    position: fixed; bottom: 20px; left: 20px; right: 20px;
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    z-index: 10;
+  }
+  .legend button {
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(20px);
+    border: 1px solid rgba(244,241,236,0.15);
+    color: #f4f1ec; padding: 10px 16px; border-radius: 980px;
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
+    font-family: inherit;
+  }
+  .legend button:hover { background: rgba(212,184,122,0.15); border-color: #d4b87a; color: #d4b87a; }
+  .legend button.active { background: rgba(212,184,122,0.25); border-color: #d4b87a; color: #d4b87a; }
+  .legend .divider { color: rgba(244,241,236,0.3); padding: 10px 4px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="ui">
+  <h1>ESP32-S3 · Interactive 3D</h1>
+  <p>Drag to rotate. Scroll to zoom. <kbd>Space</kbd> to disassemble.</p>
+  <p>Hover any component to highlight its role.</p>
+</div>
+<div class="legend">
+  <button data-action="reset">Reset</button>
+  <button data-action="explode">Disassemble</button>
+  <button data-action="assemble">Assemble</button>
+  <span class="divider">·</span>
+  <button data-action="auto">Auto-rotate</button>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const app = document.getElementById('app');
+
+// Scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a);
+scene.fog = new THREE.Fog(0x0a0a0a, 30, 80);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(0, 0, 22);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+// Lights - warm + cool for editorial feel
+const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+scene.add(ambient);
+
+const key = new THREE.DirectionalLight(0xfff5e0, 0.9);
+key.position.set(8, 10, 8);
+key.castShadow = true;
+scene.add(key);
+
+const fill = new THREE.DirectionalLight(0xc8d8ff, 0.35);
+fill.position.set(-8, 4, 4);
+scene.add(fill);
+
+const rim = new THREE.PointLight(0xd4b87a, 1.2, 30);
+rim.position.set(0, -8, -6);
+scene.add(rim);
+
+// Ground reflection
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(40, 64),
+  new THREE.MeshStandardMaterial({
+    color: 0x111113, roughness: 0.4, metalness: 0.6,
+  })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -5;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 8;
+controls.maxDistance = 50;
+controls.autoRotate = false;
+controls.autoRotateSpeed = 0.8;
+controls.target.set(0, 0, 0);
+
+// ── BUILD THE ESP32-S3 PCB ──────────────────────────────────────────
+// Board: dark PCB with traces, components soldered on top
+
+const esp32 = new THREE.Group();
+scene.add(esp32);
+
+// PCB board (the green/dark substrate)
+const boardMat = new THREE.MeshStandardMaterial({
+  color: 0x1a2e1a, roughness: 0.7, metalness: 0.1,
+});
+const pcb = new THREE.Mesh(
+  new THREE.BoxGeometry(7, 0.18, 3.2),
+  boardMat
+);
+pcb.castShadow = true;
+pcb.receiveShadow = true;
+pcb.userData = { part: 'PCB Substrate' };
+esp32.add(pcb);
+
+// PCB traces (thin gold lines on top of PCB) - decorative
+const traceMat = new THREE.MeshStandardMaterial({
+  color: 0xd4b87a, metalness: 0.9, roughness: 0.3,
+});
+for (let i = 0; i < 8; i++) {
+  const trace = new THREE.Mesh(
+    new THREE.BoxGeometry(5.5, 0.02, 0.03),
+    traceMat
+  );
+  trace.position.set(0, 0.1, -1.3 + i * 0.4);
+  esp32.add(trace);
+}
+
+// Edge-cut notches (decorative)
+const notchMat = new THREE.MeshStandardMaterial({ color: 0x2a4a2a, roughness: 0.6 });
+for (let i = 0; i < 4; i++) {
+  const notch = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.3), notchMat);
+  notch.position.set(-3.3 + i * 2.2, 0, -1.5);
+  esp32.add(notch);
+}
+
+// === Component registry: id, mesh, default position, exploded position, label ===
+const parts = [];
+function addPart(partId, mesh, defaultPos, explodedPos, label, color) {
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.position.copy(defaultPos);
+  mesh.userData = { partId, label, defaultPos: defaultPos.clone(), explodedPos: explodedPos.clone() };
+  esp32.add(mesh);
+  parts.push(mesh);
+}
+
+// 1. ESP32-S3 module (the main SoC chip) - large silver rectangle
+const socMat = new THREE.MeshStandardMaterial({
+  color: 0x1a1a1a, metalness: 0.6, roughness: 0.4,
+});
+const soc = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.32, 1.6), socMat);
+soc.userData = {
+  partId: 'soc', label: 'ESP32-S3 SoC · 240MHz dual-core · 520KB RAM · WiFi+BLE',
+  description: 'The main microcontroller. Dual-core Xtensa LX7 at 240MHz with 512KB SRAM. Handles WiFi+BLE stack on one core, sensor reads + inference on the other. 4MB flash for firmware + model storage.',
+  specs: ['240MHz dual-core Xtensa LX7', '512KB SRAM · 4MB flash', 'WiFi 802.11 b/g/n + BLE 5', 'ESP-IDF + Arduino frameworks'],
+  pins: ['GPIO 21 → INA219 SDA', 'GPIO 22 → INA219 SCL', 'GPIO 4 → DHT22 DATA', '3.3V → sensor VCC rails', 'GND → common ground'],
+  defaultPos: new THREE.Vector3(-2.5, 0.25, 0),
+  explodedPos: new THREE.Vector3(-2.5, 4, -4),
+};
+parts.push(soc);
+esp32.add(soc);
+
+// ESP32 module antenna marking (small gold rectangle on top)
+const antennaMat = new THREE.MeshStandardMaterial({
+  color: 0xd4b87a, metalness: 0.9, roughness: 0.2,
+});
+const antenna = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.02, 0.6), antennaMat);
+antenna.position.set(-2.2, 0.42, 0);
+antenna.userData = {
+  partId: 'antenna', label: 'WiFi+BLE Antenna',
+  description: 'PCB trace antenna tuned for 2.4GHz. Range ~50m indoor with typical AP.',
+  specs: ['2.4GHz band', 'PCB trace antenna', '~50m indoor range'],
+  defaultPos: new THREE.Vector3(-2.2, 0.42, 0),
+  explodedPos: new THREE.Vector3(-2.2, 5.5, 2),
+};
+parts.push(antenna);
+esp32.add(antenna);
+
+// 2. INA219 sensor (left side of board, with shunt resistor visible)
+const inaBodyMat = new THREE.MeshStandardMaterial({
+  color: 0x2d4a2b, roughness: 0.5, metalness: 0.3,
+});
+const inaBody = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.28, 0.6), inaBodyMat);
+inaBody.userData = {
+  partId: 'ina219', label: 'INA219 · Voltage & Current Sensor',
+  description: 'Texas Instruments I²C current/voltage/power monitor. Integrated 0.1Ω shunt. I²C address 0x40 by default. Reads bus voltage (0-26V), shunt voltage (±320mV), and computes current.',
+  specs: ['I²C address 0x40 (default)', '0-26V bus voltage range', '±3.2A current range', '0.1% gain error max', 'Integrated 0.1Ω shunt'],
+  pins: ['VCC → 3.3V (NOT 5V, NOT panel)', 'GND → common ground', 'SDA → GPIO 21', 'SCL → GPIO 22', 'VIN+ → panel negative', 'VIN- → load negative'],
+  defaultPos: new THREE.Vector3(0, 0.23, 0),
+  explodedPos: new THREE.Vector3(0, 3, -3),
+};
+parts.push(inaBody);
+esp32.add(inaBody);
+
+// INA219 chip detail (darker IC on top)
+const inaChip = new THREE.Mesh(
+  new THREE.BoxGeometry(0.4, 0.08, 0.3),
+  new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.7, roughness: 0.3 })
+);
+inaChip.position.set(0, 0.41, 0);
+inaChip.userData = {
+  partId: 'ina-chip', label: 'INA219 · TI BGA-12',
+  description: 'The actual TI silicon. BGA-12 package, 0.4×0.3mm.',
+  defaultPos: new THREE.Vector3(0, 0.41, 0),
+  explodedPos: new THREE.Vector3(0, 5, -3),
+};
+parts.push(inaChip);
+esp32.add(inaChip);
+
+// 3. DHT22 sensor (right side)
+const dhtBody = new THREE.Mesh(
+  new THREE.BoxGeometry(0.7, 0.42, 0.55),
+  new THREE.MeshStandardMaterial({ color: 0xf0f0e8, roughness: 0.6, metalness: 0.1 })
+);
+dhtBody.userData = {
+  partId: 'dht22', label: 'DHT22 · Temperature & Humidity',
+  description: 'Aosong AM2302 calibrated digital temperature/humidity sensor. One-wire protocol. ±0.5°C accuracy. 0.5Hz sampling (one reading every 2 seconds minimum).',
+  specs: ['±0.5°C temperature accuracy', '0-100% RH humidity', 'One-wire protocol', '0.5Hz max sampling', '10k pull-up required on DATA'],
+  pins: ['VCC → 3.3V', 'DATA → GPIO 4 (with 10k pull-up)', 'GND → common ground', 'NC (not connected)'],
+  defaultPos: new THREE.Vector3(1.5, 0.3, 0),
+  explodedPos: new THREE.Vector3(1.5, 3.5, 3),
+};
+parts.push(dhtBody);
+esp32.add(dhtBody);
+
+// DHT22 slots (ventilation grille on top)
+for (let i = 0; i < 6; i++) {
+  const slot = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 0.02, 0.04),
+    new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.5 })
+  );
+  slot.position.set(1.5, 0.52, -0.2 + i * 0.08);
+  esp32.add(slot);
+}
+
+// 4. USB connector (bottom edge)
+const usbMat = new THREE.MeshStandardMaterial({
+  color: 0x888888, metalness: 0.9, roughness: 0.3,
+});
+const usb = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.32, 0.6), usbMat);
+usb.userData = {
+  partId: 'usb', label: 'USB-C Port',
+  description: 'USB-C connector for power + serial programming. 5V input regulated to 3.3V on-board. Serial Monitor at 115200 baud for debugging.',
+  specs: ['USB-C (or Micro-USB on some boards)', '5V → 3.3V LDO regulator', 'Serial over USB @ 115200 baud', 'Programming + power'],
+  defaultPos: new THREE.Vector3(3.2, 0.16, 0),
+  explodedPos: new THREE.Vector3(3.2, 0.16, 4),
+};
+parts.push(usb);
+esp32.add(usb);
+
+// 5. Reset button (small tactile button)
+const btnMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5 });
+const resetBtn = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.2), btnMat);
+resetBtn.userData = {
+  partId: 'reset', label: 'Reset Button (EN)',
+  description: 'Hardware reset to bootloader. Press to restart the ESP32.',
+  defaultPos: new THREE.Vector3(-3.3, 0.18, -1),
+  explodedPos: new THREE.Vector3(-3.3, -1.5, -3),
+};
+parts.push(resetBtn);
+esp32.add(resetBtn);
+
+// 6. Voltage regulator (3.3V LDO)
+const ldo = new THREE.Mesh(
+  new THREE.BoxGeometry(0.3, 0.18, 0.25),
+  new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.5, roughness: 0.4 })
+);
+ldo.userData = {
+  partId: 'ldo', label: '3.3V LDO Regulator',
+  description: 'Low-dropout regulator. Steps USB 5V down to 3.3V for the ESP32 and sensors. Typical 500mA current rating.',
+  specs: ['5V → 3.3V', '500mA current', 'AMS1117 or equivalent'],
+  defaultPos: new THREE.Vector3(2.8, 0.27, -1.1),
+  explodedPos: new THREE.Vector3(4, -0.5, -3),
+};
+parts.push(ldo);
+esp32.add(ldo);
+
+// 7. GPIO pin headers (along edges - two strips)
+const headerMat = new THREE.MeshStandardMaterial({
+  color: 0xc8a060, metalness: 0.9, roughness: 0.3,
+});
+function makeHeader(x, z, count) {
+  for (let i = 0; i < count; i++) {
+    const pin = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.32, 0.08),
+      headerMat
+    );
+    pin.position.set(x - i * 0.16, 0.08, z);
+    pin.userData = {
+      partId: `pin-${x}-${z}-${i}`,
+      label: `GPIO Pin`,
+      defaultPos: pin.position.clone(),
+      explodedPos: new THREE.Vector3(x - i * 0.16, -0.8, z + (x > 0 ? 2 : -2)),
+    };
+    parts.push(pin);
+    esp32.add(pin);
+  }
+}
+makeHeader(3.0, -1.4, 15);
+makeHeader(-3.0, 1.4, 15);
+
+// 8. LED indicators (small colored dots)
+function makeLed(x, z, color, partId, label) {
+  const led = new THREE.Mesh(
+    new THREE.SphereGeometry(0.06, 16, 16),
+    new THREE.MeshStandardMaterial({
+      color, emissive: color, emissiveIntensity: 0.6,
+    })
+  );
+  led.position.set(x, 0.18, z);
+  led.userData = {
+    partId, label,
+    description: 'Status LED. Indicates power, WiFi connection, or data activity.',
+    defaultPos: led.position.clone(),
+    explodedPos: new THREE.Vector3(x, 2.5, z),
+  };
+  parts.push(led);
+  esp32.add(led);
+}
+makeLed(-3.1, 1.1, 0x00d400, 'led-power', 'Power LED (Green)');
+makeLed(-2.8, 1.1, 0xff3030, 'led-status', 'Status LED (Red)');
+
+// Hovering labels (using CSS2DRenderer)
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+labelRenderer.domElement.style.position = 'fixed';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.left = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+labelRenderer.domElement.style.zIndex = '5';
+app.appendChild(labelRenderer.domElement);
+
+const allLabels = [];
+parts.forEach(part => {
+  const d = part.userData;
+  if (!d.label) return;
+  const div = document.createElement('div');
+  div.style.cssText = `
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(212,184,122,0.4);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #f4f1ec;
+    font-family: -apple-system, sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    transform: translate(-50%, -100%);
+    margin-top: -8px;
+  `;
+  div.textContent = d.label;
+  const cssObj = new CSS2DObject(div);
+  cssObj.position.copy(part.position);
+  cssObj.position.y += 0.6;
+  part.add(cssObj);
+  allLabels.push(div);
+});
+
+// Hover detection
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hoveredPart = null;
+
+function onPointerMove(e) {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+}
+window.addEventListener('pointermove', onPointerMove);
+
+// Detail panel
+const detail = document.createElement('div');
+detail.style.cssText = `
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 340px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(212,184,122,0.3);
+  border-radius: 14px;
+  padding: 24px;
+  color: #f4f1ec;
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px);
+  transition: opacity 0.25s, transform 0.25s;
+`;
+detail.innerHTML = `
+  <div id="d-close" style="position:absolute;top:12px;right:12px;cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(244,241,236,0.2);border-radius:50%;color:#f4f1ec;font-size:16px;">×</div>
+  <div id="d-label" style="font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:#d4b87a;margin-bottom:8px;"></div>
+  <div id="d-name" style="font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em;color:#f4f1ec;line-height:1.2;margin-bottom:14px;"></div>
+  <div id="d-desc" style="font-size:13px;color:rgba(244,241,236,0.8);margin-bottom:18px;"></div>
+  <div id="d-specs-wrap" style="display:none;margin-bottom:16px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:#d4b87a;margin-bottom:6px;">SPECIFICATIONS</div>
+    <div id="d-specs" style="font-size:12.5px;color:rgba(244,241,236,0.75);line-height:1.65;"></div>
+  </div>
+  <div id="d-pins-wrap" style="display:none;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;color:#d4b87a;margin-bottom:6px;">PIN MAPPING</div>
+    <div id="d-pins" style="font-size:12px;font-family:'JetBrains Mono',monospace;color:rgba(244,241,236,0.7);line-height:1.65;"></div>
+  </div>
+`;
+document.body.appendChild(detail);
+const dLabel = detail.querySelector('#d-label');
+const dName = detail.querySelector('#d-name');
+const dDesc = detail.querySelector('#d-desc');
+const dSpecsWrap = detail.querySelector('#d-specs-wrap');
+const dSpecs = detail.querySelector('#d-specs');
+const dPinsWrap = detail.querySelector('#d-pins-wrap');
+const dPins = detail.querySelector('#d-pins');
+detail.querySelector('#d-close').addEventListener('click', () => {
+  detail.style.opacity = '0';
+  detail.style.pointerEvents = 'none';
+  detail.style.transform = 'translateX(20px)';
+  hoveredPart = null;
+});
+
+function showDetail(part) {
+  const d = part.userData;
+  dLabel.textContent = 'Component · ' + (d.partId || '').toUpperCase();
+  dName.textContent = d.label || '';
+  dDesc.textContent = d.description || '';
+  if (d.specs && d.specs.length) {
+    dSpecs.innerHTML = d.specs.map(s => '• ' + s).join('<br/>');
+    dSpecsWrap.style.display = 'block';
+  } else {
+    dSpecsWrap.style.display = 'none';
+  }
+  if (d.pins && d.pins.length) {
+    dPins.innerHTML = d.pins.map(s => '→ ' + s).join('<br/>');
+    dPinsWrap.style.display = 'block';
+  } else {
+    dPinsWrap.style.display = 'none';
+  }
+  detail.style.opacity = '1';
+  detail.style.pointerEvents = 'auto';
+  detail.style.transform = 'translateX(0)';
+}
+
+// Animation state
+let isExploded = false;
+let animationTarget = 0; // 0 = assembled, 1 = exploded
+let animationProgress = 0;
+let autoRotate = false;
+const animationSpeed = 0.05;
+
+// Actions
+document.querySelectorAll('.legend button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const a = btn.dataset.action;
+    if (a === 'reset') {
+      camera.position.set(0, 0, 22);
+      controls.target.set(0, 0, 0);
+      animationTarget = 0;
+      isExploded = false;
+      btn.blur();
+    } else if (a === 'explode') {
+      animationTarget = 1;
+      isExploded = true;
+      document.querySelector('[data-action="explode"]').classList.add('active');
+      document.querySelector('[data-action="assemble"]').classList.remove('active');
+      btn.blur();
+    } else if (a === 'assemble') {
+      animationTarget = 0;
+      isExploded = false;
+      document.querySelector('[data-action="assemble"]').classList.add('active');
+      document.querySelector('[data-action="explode"]').classList.remove('active');
+      btn.blur();
+    } else if (a === 'auto') {
+      autoRotate = !autoRotate;
+      controls.autoRotate = autoRotate;
+      btn.classList.toggle('active', autoRotate);
+      btn.blur();
+    }
+  });
+});
+
+// Space to toggle explode
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    animationTarget = isExploded ? 0 : 1;
+    isExploded = !isExploded;
+  }
+});
+
+// Animation loop
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  // Smoothly interpolate parts between assembled and exploded positions
+  if (Math.abs(animationProgress - animationTarget) > 0.001) {
+    animationProgress += (animationTarget - animationProgress) * animationSpeed;
+    parts.forEach(p => {
+      p.position.lerpVectors(p.userData.defaultPos, p.userData.explodedPos, animationProgress);
+    });
+  }
+  // Hover detection
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(parts, false);
+  if (hits.length > 0) {
+    const newHover = hits[0].object;
+    if (newHover !== hoveredPart) {
+      // Restore previous
+      if (hoveredPart) {
+        hoveredPart.material.emissive && (hoveredPart.material.emissiveIntensity = 0);
+      }
+      hoveredPart = newHover;
+      // Highlight
+      if (hoveredPart.material.emissive) {
+        hoveredPart.material.emissive.setHex(0xd4b87a);
+        hoveredPart.material.emissiveIntensity = 0.4;
+      }
+      // Show label
+      allLabels.forEach(l => l.style.opacity = '0');
+      const labelDiv = hoveredPart.children.find(c => c instanceof CSS2DObject);
+      if (labelDiv) labelDiv.element.style.opacity = '1';
+      // Show detail
+      showDetail(hoveredPart);
+    }
+    renderer.domElement.style.cursor = 'pointer';
+  } else {
+    if (hoveredPart) {
+      hoveredPart.material.emissive && (hoveredPart.material.emissiveIntensity = 0);
+      hoveredPart = null;
+      allLabels.forEach(l => l.style.opacity = '0');
+      detail.style.opacity = '0';
+      detail.style.pointerEvents = 'none';
+      detail.style.transform = 'translateX(20px)';
+    }
+    renderer.domElement.style.cursor = 'grab';
+  }
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
+});
+
+renderer.domElement.style.cursor = 'grab';
+renderer.domElement.addEventListener('mousedown', () => renderer.domElement.style.cursor = 'grabbing');
+renderer.domElement.addEventListener('mouseup', () => renderer.domElement.style.cursor = 'grab');
+</script>
+</body>
+</html>
